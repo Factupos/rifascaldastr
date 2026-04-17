@@ -3438,10 +3438,14 @@ function closeBox(withScale){
 
 /* Abrir WhatsApp */
 /* Abrir WhatsApp */
+/* Abrir WhatsApp */
 function openWA(payload){
   // Forzamos a que use ÚNICAMENTE el número validado de esta sucursal
   const tel = window.__WHATSAPP_DIGITS;
   
+  // Capturamos el nombre de la empresa (si no ha cargado, usa 'Rifas' por defecto)
+  const nombreEmpresa = window.__CONFIG_NAME || 'Rifas';
+
   if (!tel) {
     msg('Error: Número de WhatsApp no configurado', true);
     return;
@@ -3452,14 +3456,17 @@ function openWA(payload){
     const unique = Array.from(new Set(payload.map(pad4)));
     if (!unique.length) return;
     const listado = unique.map((n,idx)=> `${idx+1}. ${n}`).join('\n');
+    
+    // Agregamos el nombre de la empresa al mensaje múltiple
     message =
-      `Hola, estoy interesado en separar los siguientes números:\n\n` +
+      `Hola ${nombreEmpresa}, estoy interesado en separar los siguientes números:\n\n` +
       `${listado}\n\n` +
       `Total: ${unique.length} número${unique.length>1?'s':''}.\n\n` +
       `Quedo atento(a) a la confirmación de disponibilidad.`;
   } else {
     const number = pad4(payload);
-    message = "Hola, estoy interesado en separar este número: " + number;
+    // Agregamos el nombre de la empresa al mensaje individual
+    message = `Hola ${nombreEmpresa}, estoy interesado en separar este número: ` + number;
   }
 
   const url = "https://wa.me/" + tel + "?text=" + encodeURIComponent(message);
