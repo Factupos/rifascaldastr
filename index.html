@@ -3967,50 +3967,7 @@ function showChoiceFromTile(tile, n){
   ov.onclick = ()=> closeBox(false);
   box.onclick=(e)=> e.stopPropagation();
 }
-function onTileTap(el, num, pt){
-  const n = pad4(num);
-  
-  if (ALL[n] !== 'libre') {
-    msg('Boleta ocupada', true);
-    return;
-  }
-  
-  // Pequeño efecto visual de toque
-  el.classList.add('tap-effect');
-  setTimeout(() => el.classList.remove('tap-effect'), 150);
-  
-  // Agregar o quitar del carrito directamente sin preguntar
-  if (CART_ITEMS.includes(n)) {
-    removeFromCart(n);
-  } else {
-    addToCart(n);
-  }
-}
 
-  
-  el.classList.add('tap-effect');
-  setTimeout(() => el.classList.remove('tap-effect'), 150);
-  
-  showChoiceFromTile(el, n);
-}
-  
-  el.classList.add('tap-effect');
-  setTimeout(() => el.classList.remove('tap-effect'), 150);
-  
-  showChoiceFromTile(el, n);
-}
-  
-  el.classList.add('tap-effect');
-  setTimeout(() => el.classList.remove('tap-effect'), 150);
-  
-  showChoiceFromTile(el, n);
-}
-  
-  el.classList.add('tap-effect');
-  setTimeout(() => el.classList.remove('tap-effect'), 150);
-  
-  showChoiceFromTile(el, n);
-}
 
 /* =========================
    INIT ultrarrápido + BLOQUEO
