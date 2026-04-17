@@ -3968,10 +3968,16 @@ function showChoiceFromTile(tile, n){
   box.onclick=(e)=> e.stopPropagation();
 }
 function onTileTap(el, num, pt){
-  // Modo catálogo activado: Se deshabilita la selección y el carrito.
-  // Mantenemos el número en formato texto para conservar ceros a la izquierda.
   const n = pad4(num);
-  return; 
+  if (ALL[n] !== 'libre') {
+    msg('Boleta ocupada', true);
+    return;
+  }
+  
+  el.classList.add('tap-effect');
+  setTimeout(() => el.classList.remove('tap-effect'), 150);
+  
+  showChoiceFromTile(el, n);
 }
   
   el.classList.add('tap-effect');
