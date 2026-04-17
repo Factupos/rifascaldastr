@@ -546,14 +546,9 @@ body.search-has-text #raffles{ display:none !important; }
   outline: none;
   cursor: pointer;
   border: none;
+  transform: translateZ(0);
   overflow: hidden;
   transition: transform 0.2s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.2s ease, background 0.2s ease;
-  
-  /* ⚡ OPTIMIZACIÓN EXTREMA PARA MÓVILES (GPU) */
-  transform: translateZ(0);
-  will-change: transform, box-shadow, background;
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
 }
 
 .raffle .num { position: relative; z-index: 2; font-size: clamp(38px,8.5vw,48px); line-height: 1;
@@ -1727,11 +1722,10 @@ header{
   border: 1px solid rgba(0,0,0,.1) !important;
   box-shadow: 0 4px 10px rgba(0,0,0,.1) !important;
 }
-.raffle.selected {
+.raffle.selected{
   background: linear-gradient(135deg, #FF9800, #FF6D00) !important;
   box-shadow: 0 8px 20px rgba(255, 109, 0, .3) !important;
-  /* El truco: en lugar de quitar el borde, lo hacemos transparente */
-  border: 1px solid transparent !important; 
+  border: none !important;
 }
 .raffle.selected .tick{
   background: #ffffff !important;
@@ -2247,54 +2241,6 @@ header{
   opacity: 1;
   filter: blur(0px);
 }
-
-  /* =========================================================
-   📱 OPTIMIZACIÓN MÓVIL: 6 BOLETAS POR FILA
-   ========================================================= */
-@media (max-width: 768px) {
-  /* 1. Forzamos una cuadrícula exacta de 6 columnas */
-  #raffles {
-    display: grid !important;
-    grid-template-columns: repeat(6, 1fr) !important;
-    gap: 6px !important; /* Espacio optimizado para no desperdiciar pantalla */
-    padding: 0 8px 20vh !important;
-  }
-
-  /* 2. Ajustamos la boleta para mantener proporciones y área táctil segura */
-  .raffle {
-    width: 100% !important;
-    height: auto !important;
-    aspect-ratio: 1 / 1.15; /* Ligeramente más alto que ancho para estilizar */
-    border-radius: 12px !important;
-    padding: 0 !important;
-    touch-action: manipulation !important; /* ⚡ Evita el delay al hacer tap */
-  }
-
-  /* Ajuste de brillos y bordes internos para el nuevo tamaño */
-  .raffle::after {
-    border-radius: 10px !important;
-    inset: 1px !important;
-  }
-
-  /* 3. Tipografía dinámica y legible para 4 dígitos en espacios reducidos */
-  .raffle .num {
-    font-size: clamp(12px, 3.6vw, 16px) !important;
-    font-weight: 900 !important;
-    letter-spacing: -0.3px !important; /* Acerca los números sutilmente para que quepan */
-    line-height: 1 !important;
-  }
-
-  /* 4. Ajuste minucioso del "check" de selección para que no tape el número */
-  .raffle .tick {
-    width: 18px !important;
-    height: 18px !important;
-    font-size: 11px !important;
-    top: -4px !important;
-    right: -4px !important;
-  }
-}
-
-  
 </style>
 
 </head>
@@ -2448,7 +2394,7 @@ header{
 
     <div class="search-wrapper">
       <span class="search-icon" aria-hidden="true">🔍</span>
-      <input id="search" class="search-bar" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="3" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="000">
+      <input id="search" class="search-bar" type="tel" inputmode="numeric" pattern="[0-9]*" maxlength="4" enterkeyhint="search" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" placeholder="0000">
       <button id="clearSearch" class="clear-search" type="button" aria-label="Borrar búsqueda">&times;</button>
     </div>
     
@@ -3146,7 +3092,7 @@ let CART_ITEMS = [];
 /* =========================
    Utils
    ========================= */
-const pad4 = n => String(n).replace(/\D/g,'').slice(0,3).padStart(3,'0');
+const pad4 = n => String(n).replace(/\D/g,'').slice(0,4).padStart(4,'0');
 const todayKey = () => new Date().toISOString().slice(0,10);
 function randInt(maxExclusive){
   if (crypto?.getRandomValues){ const b = new Uint32Array(1); crypto.getRandomValues(b); return b[0] % maxExclusive; }
@@ -3170,7 +3116,7 @@ function parseCSV(text){
   }
   push(); return rows.filter(r => r.some(x=>String(x).trim()!=='')); 
 }
-function makeBaseMap(){ const map={}; for(let i=0;i<1000;i++){ map[String(i).padStart(3,'0')]='ocupado' } return map }
+function makeBaseMap(){ const map={}; for(let i=0;i<10000;i++){ map[String(i).padStart(4,'0')]='ocupado' } return map }
 function normStatusAB(s){ const t=String(s??'').trim().toLowerCase(); return t==='libre' ? 'libre' : 'ocupado' }
 function extractColombiaDigits(raw){
   const chunks=(String(raw||'').match(/\d+/g)||[]); let d=chunks.join(''); d=d.replace(/^00/,'');
@@ -3722,7 +3668,7 @@ function setAllFromFreeList(freeList){
   for(const n of freeList){ map[n] = 'libre'; }
   ALL = map;
 }
-function sampleDailyFromFreeList(freeList, target=500){
+function sampleDailyFromFreeList(freeList, target=240){
   const L = freeList.length;
   if(L<=target) return [...freeList];
   const out = freeList.slice(0, target);
@@ -3751,7 +3697,7 @@ function loadDailyFromCache(){
 function pickDaily(force=false){
   if(!force && loadDailyFromCache()) return;
   const libres = Object.keys(ALL||{}).filter(k=>ALL[k]==='libre');
-  DAILY = sampleDailyFromFreeList(libres, 500);
+  DAILY = sampleDailyFromFreeList(libres, 240);
   persistDaily();
 }
 
@@ -3767,8 +3713,8 @@ async function syncMapFast(){
     for(let i=1;i<rows.length;i++){
       const r=rows[i]||[]; const a=(r[0]??'').toString().trim(); const b=(r[1]??'').toString().trim();
       if(!a) continue; let digits=a.replace(/\D/g,''); if(!digits) continue;
-      if(digits.length>3) digits=digits.slice(0,3);
-      const num=digits.padStart(3,'0');
+      if(digits.length>4) digits=digits.slice(0,4);
+      const num=digits.padStart(4,'0');
       if (normStatusAB(b)==='libre') freeList.push(num);
     }
     saveMapCache(freeList);
@@ -3785,7 +3731,7 @@ async function syncMapFast(){
    ========================= */
 async function rerenderSearch(){
   const layer=document.getElementById('searchResult'); hideMsg();
-  const raw=(SEARCH_INPUT.value||'').replace(/\D/g,'').slice(0,3);
+  const raw=(SEARCH_INPUT.value||'').replace(/\D/g,'').slice(0,4);
   if(SEARCH_INPUT.value!==raw) SEARCH_INPUT.value=raw;
   layer.style.display='none'; layer.innerHTML='';
   if(raw.length===0){ document.body.classList.remove('search-has-text'); return; }
@@ -3967,7 +3913,43 @@ function showChoiceFromTile(tile, n){
   ov.onclick = ()=> closeBox(false);
   box.onclick=(e)=> e.stopPropagation();
 }
+function onTileTap(el, num, pt){
+  if(!el) return;
+  const n = pad4(num);
 
+  // Deselección instantánea
+  if(CART_ITEMS.includes(n)){
+    removeFromCart(n);
+    msg('Removida del carrito: ' + n, false);
+    el.dataset.busy = '';
+    return;
+  }
+
+  // Seguro de spam
+  if(el.dataset.busy === '1') return;
+
+  const st = ALL?.[n];
+  if(st && st !== 'libre'){
+    msg('Boleta ocupada', true);
+    return;
+  }
+
+  el.dataset.busy = '1';
+  hideMsg();
+
+  // ✅ NUEVO EFECTO 100% NATIVO (Adiós lag y pantallas negras)
+  el.classList.add('tap-effect');
+  
+  // Quitamos el efecto después de 200 milisegundos (pura fluidez)
+  setTimeout(() => {
+    el.classList.remove('tap-effect');
+    el.dataset.busy = '';
+  }, 200); 
+    
+  // Lo enviamos directo al carrito
+  addToCart(n);
+  msg('Agregado al carrito: ' + n, false);
+}
 
 /* =========================
    INIT ultrarrápido + BLOQUEO
@@ -4097,7 +4079,7 @@ document.addEventListener('DOMContentLoaded', async ()=>{
       else { await syncMapFast(); }
     }
     const libres=Object.keys(ALL||{}).filter(k=>ALL[k]==='libre');
-    const chosen = libres.length ? libres[randInt(libres.length)] : String(randInt(1000)).padStart(3,'0');
+    const chosen = libres.length ? libres[randInt(libres.length)] : String(randInt(10000)).padStart(4,'0');
 
     const placeholder=document.createElement('div'); placeholder.className='raffle large-raffle'; layer.appendChild(placeholder); layer.style.display='flex';
 
