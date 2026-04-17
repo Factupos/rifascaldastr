@@ -2294,33 +2294,7 @@ header{
   }
 }
 
-  /* =========================================================
-   MODO CATÁLOGO (Sin carrito, sin selección)
-   ========================================================= */
-#cartPanel, .finish-top-button, .raffle .tick {
-    display: none !important;
-}
-
-/* Centrar el botón Aleatorio al quitar el de Finalizar */
-.action-buttons {
-    justify-content: center !important;
-}
-.random-button {
-    max-width: 320px !important;
-}
-
-/* Anular interacciones y animaciones de selección en las boletas */
-.raffle {
-    cursor: default !important;
-}
-.raffle:hover, .raffle:active, .raffle.tap-effect {
-    transform: none !important;
-    box-shadow: 
-      0 8px 20px rgba(0, 0, 0, 0.08), 
-      inset 2px 2px 6px rgba(255, 255, 255, 0.9), 
-      inset -2px -2px 6px rgba(0, 0, 0, 0.04) !important;
-    background: linear-gradient(145deg, #F8FAFC 0%, #E2E8F0 100%) !important;
-}
+  
 </style>
 
 </head>
@@ -3994,10 +3968,16 @@ function showChoiceFromTile(tile, n){
   box.onclick=(e)=> e.stopPropagation();
 }
 function onTileTap(el, num, pt){
-  // Modo catálogo activado: Se deshabilita la selección y el carrito.
-  // Mantenemos el número en formato texto para conservar ceros a la izquierda.
   const n = pad4(num);
-  return; 
+  if (ALL[n] !== 'libre') {
+    msg('Boleta ocupada', true);
+    return;
+  }
+  
+  el.classList.add('tap-effect');
+  setTimeout(() => el.classList.remove('tap-effect'), 150);
+  
+  showChoiceFromTile(el, n);
 }
 
 /* =========================
